@@ -99,8 +99,11 @@ public class CubiCoreVelocity {
             return;
         }
         @Cleanup Reader reader = new FileReader(colorsFile);
-        colors = yaml.load(reader);
+        Map<String, String> nativeColors = yaml.load(reader);
         if (colors == null) colors = new HashMap<>();
+        for (Map.Entry<String, String> nativeColor: nativeColors.entrySet()) {
+            colors.put(UUID.fromString(nativeColor.getKey()), nativeColor.getValue());
+        }
     }
 
     private void saveColors() throws IOException {

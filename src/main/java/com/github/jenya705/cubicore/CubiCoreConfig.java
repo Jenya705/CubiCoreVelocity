@@ -2,7 +2,6 @@ package com.github.jenya705.cubicore;
 
 import lombok.Cleanup;
 import lombok.Data;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.Map;
