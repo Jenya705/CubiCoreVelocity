@@ -75,7 +75,8 @@ public class CubiCoreVelocity {
 
     @Subscribe
     public void onServerChange(ServerPostConnectEvent event) {
-        if (colors.containsKey(event.getPlayer().getUniqueId())) {
+        if (event.getPlayer().hasPermission("cubicore.color") && 
+                colors.containsKey(event.getPlayer().getUniqueId())) {
             sendColor(event.getPlayer(), colors.get(event.getPlayer().getUniqueId()));
         }
     }
