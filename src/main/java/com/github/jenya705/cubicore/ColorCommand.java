@@ -44,15 +44,15 @@ public class ColorCommand implements SimpleCommand {
         String chosenColor = args[0];
         NamedTextColor namedTextColor = NamedTextColor.NAMES.value(chosenColor.toLowerCase(Locale.ROOT));
         if (namedTextColor == null) {
-            // not in list. check for hex color
+            // not in list. checking for hex color
             if (chosenColor.length() == 7 && pattern.matcher(chosenColor).matches()) {
-                String hexColor = chosenColor.substring(1);
+                TextColor color = TextColor.fromHexString(chosenColor);
                 player.sendMessage(Component
                         .text(plugin.getConfig().getColorSuccess())
-                        .color(TextColor.fromHexString(chosenColor))
+                        .color(color)
                 );
-                plugin.getColors().put(player.getUniqueId(), hexColor);
-                plugin.sendColor(player, hexColor);
+                plugin.getColors().put(player.getUniqueId(), color);
+                plugin.sendColor(player, color);
             }
             else {
                 player.sendMessage(Component
@@ -67,8 +67,8 @@ public class ColorCommand implements SimpleCommand {
                     .color(namedTextColor)
             );
             String hexString = namedTextColor.asHexString().substring(1);
-            plugin.getColors().put(player.getUniqueId(), hexString);
-            plugin.sendColor(player, hexString);
+            plugin.getColors().put(player.getUniqueId(), namedTextColor);
+            plugin.sendColor(player, namedTextColor);
         }
     }
 

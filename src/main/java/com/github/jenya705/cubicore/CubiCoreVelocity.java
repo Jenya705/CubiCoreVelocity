@@ -3,7 +3,6 @@ package com.github.jenya705.cubicore;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -11,11 +10,11 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import lombok.Cleanup;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import net.kyori.adventure.text.format.TextColor;
 import org.slf4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -52,7 +51,7 @@ public class CubiCoreVelocity {
     private CubiCoreConfig config;
 
     @Getter
-    private Map<UUID, String> colors;
+    private Map<UUID, TextColor> colors;
 
     private MinecraftChannelIdentifier channel;
 
@@ -65,6 +64,7 @@ public class CubiCoreVelocity {
         commandManager.register("color", new ColorCommand(this));
         channel = MinecraftChannelIdentifier.create("cubicore", "color");
         server.getChannelRegistrar().register(channel);
+        server.getEventManager().register(this, new PlayerHandler(this));
     }
 
     @Subscribe
@@ -75,19 +75,19 @@ public class CubiCoreVelocity {
 
     @Subscribe
     public void onServerChange(ServerPostConnectEvent event) {
-        if (event.getPlayer().hasPermission("cubicore.color") && 
+        if (event.getPlayer().hasPermission("cubicore.color") &&
                 colors.containsKey(event.getPlayer().getUniqueId())) {
             sendColor(event.getPlayer(), colors.get(event.getPlayer().getUniqueId()));
         }
     }
 
-    public void sendColor(Player player, String color) {
+    public void sendColor(Player player, TextColor color) {
         player
                 .getCurrentServer()
                 .ifPresent(serverConnection ->
                         serverConnection.sendPluginMessage(
                                 channel,
-                                color.getBytes()
+                                Integer.toHexString(color.value()).getBytes()
                         )
                 );
     }
@@ -103,7 +103,7 @@ public class CubiCoreVelocity {
         Map<String, String> nativeColors = yaml.load(reader);
         if (colors == null) colors = new HashMap<>();
         for (Map.Entry<String, String> nativeColor: nativeColors.entrySet()) {
-            colors.put(UUID.fromString(nativeColor.getKey()), nativeColor.getValue());
+            colors.put(UUID.fromString(nativeColor.getKey()), TextColor.fromHexString("#" + nativeColor.getValue()));
         }
     }
 
@@ -111,8 +111,8 @@ public class CubiCoreVelocity {
         File colorsFile = new File(dataDirectory.toFile(), "colors.yml");
         if (!colorsFile.exists()) colorsFile.createNewFile();
         Map<String, String> nativeColors = new HashMap<>();
-        for (Map.Entry<UUID, String> entry: colors.entrySet()) {
-            nativeColors.put(entry.getKey().toString(), entry.getValue());
+        for (Map.Entry<UUID, TextColor> entry: colors.entrySet()) {
+            nativeColors.put(entry.getKey().toString(), Integer.toHexString(entry.getValue().value()));
         }
         @Cleanup Writer writer = new FileWriter(colorsFile);
         yaml.dump(nativeColors, writer);
