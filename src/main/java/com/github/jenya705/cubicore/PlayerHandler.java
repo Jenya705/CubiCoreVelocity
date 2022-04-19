@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author Jenya705
@@ -37,10 +38,7 @@ public class PlayerHandler {
     }
 
     private void connectMessage(RegisteredServer server, Player player) {
-        TextColor color = Objects.requireNonNullElse(
-                plugin.getColors().get(player.getUniqueId()),
-                NamedTextColor.GRAY
-        );
+        TextColor color = getColor(player);
         Component message = Component
                 .translatable("multiplayer.player.joined")
                 .args(Component
@@ -58,10 +56,7 @@ public class PlayerHandler {
     }
 
     private void disconnectMessage(RegisteredServer server, Player player) {
-        TextColor color = Objects.requireNonNullElse(
-                plugin.getColors().get(player.getUniqueId()),
-                NamedTextColor.GRAY
-        );
+        TextColor color = getColor(player);
         server.getPlayersConnected()
                 .forEach(it -> it
                         .sendMessage(Component
@@ -76,6 +71,14 @@ public class PlayerHandler {
                                         .append(buildPlayerComponent(player))
                                 ))
                 );
+    }
+
+    private TextColor getColor(Player player) {
+        if (!player.hasPermission("cubicore.color")) return NamedTextColor.GRAY;
+        return Objects.requireNonNullElse(
+                plugin.getColors().get(player.getUniqueId()),
+                NamedTextColor.GRAY
+        );
     }
 
     private static Component buildPlayerComponent(Player player) {
